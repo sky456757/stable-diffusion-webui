@@ -162,7 +162,7 @@ def save_files(js_data, images, do_make_zip, index):
                     zip_file.writestr(filenames[i], f.read())
         fullfns.insert(0, zip_filepath)
 
-    return fullfns, '', '', plaintext_to_html(f"Saved: {filenames[0]}")
+    return gr.File.update(value=fullfns, visible=True), '', '', plaintext_to_html(f"Saved: {filenames[0]}")
 
 
 def wrap_gradio_call(func, extra_outputs=None):
@@ -553,7 +553,7 @@ def create_ui(wrap_gradio_gpu_call):
                         do_make_zip = gr.Checkbox(label="Make Zip when Save?", value=False)
                     
                     with gr.Row():
-                        download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False)
+                        download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False, visible=False)
 
                 with gr.Group():
                     html_info = gr.HTML()
@@ -741,7 +741,7 @@ def create_ui(wrap_gradio_gpu_call):
                         do_make_zip = gr.Checkbox(label="Make Zip when Save?", value=False)
                     
                     with gr.Row():
-                        download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False)
+                        download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False, visible=False)
 
                 with gr.Group():
                     html_info = gr.HTML()
@@ -1153,6 +1153,15 @@ def create_ui(wrap_gradio_gpu_call):
     component_dict = {}
 
     def open_folder(f):
+        if not os.path.isdir(f):
+            print(f"""
+WARNING
+An open_folder request was made with an argument that is not a folder.
+This could be an error or a malicious attempt to run code on your computer.
+Requested path was: {f}
+""", file=sys.stderr)
+            return
+
         if not shared.cmd_opts.hide_ui_dir_config:
             path = os.path.normpath(f)
             if platform.system() == "Windows":
