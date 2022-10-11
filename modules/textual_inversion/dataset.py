@@ -15,11 +15,10 @@ re_tag = re.compile(r"[a-zA-Z][_\w\d()]+")
 
 
 class PersonalizedBase(Dataset):
-    def __init__(self, data_root, size=None, repeats=100, flip_p=0.5, placeholder_token="*", width=512, height=512, model=None, device=None, template_file=None):
+    def __init__(self, data_root, width, height, repeats, flip_p=0.5, placeholder_token="*", model=None, device=None, template_file=None):
 
         self.placeholder_token = placeholder_token
 
-        self.size = size
         self.width = width
         self.height = height
         self.flip = transforms.RandomHorizontalFlip(p=flip_p)
@@ -36,9 +35,10 @@ class PersonalizedBase(Dataset):
         self.image_paths = [os.path.join(data_root, file_path) for file_path in os.listdir(data_root)]
         print("Preparing dataset...")
         for path in tqdm.tqdm(self.image_paths):
-            image = Image.open(path)
-            image = image.convert('RGB')
-            image = image.resize((self.width, self.height), PIL.Image.BICUBIC)
+            try:
+                image = Image.open(path).convert('RGB').resize((self.width, self.height), PIL.Image.BICUBIC)
+            except Exception:
+                continue
 
             filename = os.path.basename(path)
             filename_tokens = os.path.splitext(filename)[0]
