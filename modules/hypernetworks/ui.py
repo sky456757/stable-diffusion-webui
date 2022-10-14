@@ -5,7 +5,7 @@ import gradio as gr
 
 import modules.textual_inversion.textual_inversion
 import modules.textual_inversion.preprocess
-from modules import sd_hijack, shared
+from modules import sd_hijack, shared, devices
 from modules.hypernetworks import hypernetwork
 
 
@@ -25,7 +25,7 @@ def train_hypernetwork(*args):
 
     initial_hypernetwork = shared.loaded_hypernetwork
 
-    assert not shared.cmd_opts.lowvram and not shared.cmd_opts.medvram, 'Training models with lowvram or medvram is not possible'
+    assert not shared.cmd_opts.lowvram, 'Training models with lowvram is not possible'
 
     try:
         sd_hijack.undo_optimizations()
@@ -41,5 +41,7 @@ Hypernetwork saved to {html.escape(filename)}
         raise
     finally:
         shared.loaded_hypernetwork = initial_hypernetwork
+        shared.sd_model.cond_stage_model.to(devices.device)
+        shared.sd_model.first_stage_model.to(devices.device)
         sd_hijack.apply_optimizations()
 
